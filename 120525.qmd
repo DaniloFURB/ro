@@ -1,0 +1,131 @@
+---
+title: "Danilo"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages   #nomes unicos
+#| include: false        #nao inclui resultado no doc
+
+library(tidyverse)   #pacote ggplot2 graficos
+library(WDI)
+
+# DADOS EM PAINEL
+dadosfoodexport <- WDI(country = 'all',
+                indicator = 'TX.VAL.FOOD.ZS.UN')
+# CORTE TRANSVERSAL
+dadosfoodexport2023 <- WDI(country = 'all',
+                    indicator = 'TX.VAL.FOOD.ZS.UN',
+                    start = 2023, end = 2023)
+# SÉRIE TEMPORAL
+dadosfoodexportbr <- WDI(country = 'BR',
+                  indicator = 'TX.VAL.FOOD.ZS.UN')
+
+
+```
+
+## Exportation de alimentos
+
+O código TX.VAL.FOOD.ZS.UN refere-se ao indicador do Banco Mundial que mede a proporção das exportações de alimentos no total das exportações de mercadorias de um país, expressa em porcentagem. Os alimentos abrangem produtos classificados nas seções 0 (alimentos e animais vivos), 1 (bebidas e tabaco) e 4 (óleos e gorduras de origem animal e vegetal), além da divisão 22 (sementes e frutos oleaginosos) da Classificação Padrão Internacional de Comércio (SITC). Esse indicador é útil para analisar a importância do setor alimentício na pauta exportadora de um país. Os dados são estimados pela equipe do Banco Mundial com base na base de dados Comtrade das Nações Unidas.
+
+**GRAFICOS EM PAINEL**
+
+```{r grafico1, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(plotly)
+
+grafico_gg <- ggplot(dadosfoodexport, 
+       aes(x = year, y = TX.VAL.FOOD.ZS.UN)) +
+  geom_point(aes(text = paste("Ano: ", year, "<br>% do total: ", round(TX.VAL.FOOD.ZS.UN, 2))),
+             color = "#3498DB", size = 3, alpha = 0.8) +
+  geom_smooth(method = "loess", se = FALSE, color = "#E74C3C", size = 1.2) +
+  labs(
+    title = "Exportações de Alimentos (% do Total) por Ano",
+    x = "Ano",
+    y = "Exportações de Alimentos (% do Total)",
+    caption = "Fonte: WDI"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16, hjust = 0.5),
+    axis.title = element_text(face = "bold"),
+    axis.text = element_text(color = "gray40"),
+    panel.grid.major = element_line(color = "lightgray", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    plot.caption = element_text(size = 10, hjust = 1, color = "gray40", margin = margin(t = 10)),
+    plot.margin = margin(10, 10, 40, 10)
+  )
+
+ggplotly(grafico_gg, tooltip = "text")
+
+```
+
+**GRAFICOS CORTE TRANS**
+
+```{r grafico2, echo=FALSE, warning=FALSE, message=FALSE}
+grafcort <- ggplot(dadosfoodexport2023, 
+                   aes(x = year, y = TX.VAL.FOOD.ZS.UN)) +
+  geom_point(aes(text = paste("Ano: ", year, "<br>% do total: ", round(TX.VAL.FOOD.ZS.UN, 2))),
+             color = "#3498DB", size = 4, alpha = 0.6) +
+  geom_smooth(method = "loess", se = FALSE, color = "#E74C3C", size = 1.5) +
+  labs(
+    title = "Exportação de Alimentos como % do Total",
+    x = "Ano", 
+    y = "Exportações de Alimentos (% do total)",
+    caption = "Fonte: WDI"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16),
+    axis.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(color = "gray30", size = 12),
+    panel.grid.major = element_line(color = "lightgray", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "none",
+    plot.caption = element_text(size = 10, hjust = 1, color = "gray40", margin = margin(t = 10)),
+    plot.margin = margin(10, 10, 40, 10)
+  )
+
+ggplotly(grafcort, tooltip = "text")
+
+```
+
+**GRAFICOS SERIE TEMPORAL**
+
+```{r grafico3_interativo, echo=FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(plotly)
+
+grafserie <- ggplot(dadosfoodexportbr,
+                    aes(x = year, y = TX.VAL.FOOD.ZS.UN)) +
+  geom_line(aes(text = paste("Ano: ", year, "<br>% do total: ", round(TX.VAL.FOOD.ZS.UN, 2))),
+            color = "#1f77b4", size = 1.5) +
+  geom_point(aes(text = paste("Ano: ", year, "<br>% do total: ", round(TX.VAL.FOOD.ZS.UN, 2))),
+             color = "#FF6600", size = 3, alpha = 0.8) +
+  geom_smooth(method = "loess", se = FALSE, linetype = "dashed", color = "darkred", size = 1.2) +
+  labs(
+    title = "Série Temporal das Exportações de Alimentos",
+    subtitle = "Brasil – Exportações de alimentos como % do total",
+    x = "Ano", 
+    y = "Exportações de Alimentos (% do total)",
+    caption = "Fonte: WDI"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", size = 18, hjust = 0.5),
+    plot.subtitle = element_text(size = 14, hjust = 0.5, color = "gray40"),
+    plot.caption = element_text(size = 10, hjust = 1, color = "gray40", margin = margin(t = 10)),
+    axis.title = element_text(face = "bold"),
+    axis.text = element_text(color = "gray40", size = 12),
+    panel.grid.major = element_line(color = "lightgray", linetype = "dashed"),
+    panel.grid.minor = element_blank(),
+    plot.background = element_rect(fill = "white"),
+    plot.margin = margin(10, 10, 40, 10)
+  ) +
+  geom_hline(yintercept = 0, linetype = "solid", color = "gray60")
+
+ggplotly(grafserie, tooltip = "text")
+
+```
